@@ -1,8 +1,6 @@
-<#<table class="wikisnippet_alert" style="border-left:4px solid #aaa; margin:20px; width:90%; background-color:#f1f1f1;">
-<tr valign="middle" style="vertical-align: middle;"><td style="vertical-align: middle; padding:20px; 20px 0 0px; text-align:left;">#>
-### Ubuntu 18.04
+### OS Ubuntu 18.04
 
-<#</td></tr></table>#>
+
 ### Приложения:
 
 * git
@@ -21,12 +19,13 @@
 
 ### Зависимости:
 ```bash
-sudo apt-get install -y git subversion build-essential autoconf automake libtool libncurses5 libncurses5-dev make libjpeg-dev libtool libtool-bin libsqlite3-dev libpcre3-dev libspeexdsp-dev libldns-dev libedit-dev yasm liblua5.2-dev libopus-dev cmake xclip libcurl4-openssl-dev libexpat1-dev libgnutls28-dev libtiff5-dev libx11-dev unixodbc-dev libssl-dev python-dev zlib1g-dev libasound2-dev libogg-dev libvorbis-dev libperl-dev libgdbm-dev libdb-dev uuid-dev libsndfile1-dev # не хватает sqitch
+sudo apt-get update
+sudo apt-get install -y git unzip subversion build-essential autoconf automake libtool libncurses5 libncurses5-dev make libjpeg-dev libtool libtool-bin libsqlite3-dev libpcre3-dev libspeexdsp-dev libldns-dev libedit-dev yasm liblua5.2-dev libopus-dev cmake xclip libcurl4-openssl-dev libexpat1-dev libgnutls28-dev libtiff5-dev libx11-dev unixodbc-dev libssl-dev python-dev zlib1g-dev libasound2-dev libogg-dev libvorbis-dev libperl-dev libgdbm-dev libdb-dev uuid-dev libsndfile1-dev # не хватает sqitch
 ```
 
 ### Git:
 ```bash
-sudo apt-get update
+
 sudo apt-get install git
 ```
 
@@ -212,7 +211,7 @@ cd vms_fs
 ```
 
 
-* меняем настройки подключения к бд в config/sys.config:
+* меняем настройки подключения к бд в vms_fs/config/sys.config и в vms_fs/sys.config:
 
 ```
 {epgl_port,5432},
