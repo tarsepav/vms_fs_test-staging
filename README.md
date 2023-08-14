@@ -392,8 +392,9 @@ sudo cp -a /home/develop/src/mf-vms-ansible/roles/freeswitch/templates/freeswitc
 
 >sound-prefix="/usr/local/freeswitch/sounds/ru/RU/elena"
 
-* забираем звуковые файлы из http://192.168.11.202/distr/project/vms/: http://192.168.11.202/distr/project/vms/freeswitch-sounds-ru-RU-elena-8000-1.0.51.tar.gz
-http://192.168.11.202/distr/project/vms/mf_sounds_20191205.tar.gz
+Забираем звуковые файлы из http://192.168.11.202/distr/project/vms/:
+* http://192.168.11.202/distr/project/vms/freeswitch-sounds-ru-RU-elena-8000-1.0.51.tar.gz
+* http://192.168.11.202/distr/project/vms/mf_sounds_20191205.tar.gz
 
 ```bash
 cd /usr/local/freeswitch/sounds
