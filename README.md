@@ -14,13 +14,13 @@
 
 ### Доступ:
 
-* ((https://gitlab.sifox.ru https://gitlab.sifox.ru))
-* vpn ((http://192.168.11.202 http://192.168.11.202))
+* gitlab https://gitlab.sifox.ru
+* vpn http://192.168.11.202
 
 ### Зависимости:
 ```bash
 sudo apt-get update
-sudo apt-get install -y git unzip subversion build-essential autoconf automake libtool libncurses5 libncurses5-dev make libjpeg-dev libtool libtool-bin libsqlite3-dev libpcre3-dev libspeexdsp-dev libldns-dev libedit-dev yasm liblua5.2-dev libopus-dev cmake xclip libcurl4-openssl-dev libexpat1-dev libgnutls28-dev libtiff5-dev libx11-dev unixodbc-dev libssl-dev python-dev zlib1g-dev libasound2-dev libogg-dev libvorbis-dev libperl-dev libgdbm-dev libdb-dev uuid-dev libsndfile1-dev # не хватает sqitch
+sudo apt-get install -y unzip subversion build-essential autoconf automake libtool libncurses5 libncurses5-dev make libjpeg-dev libtool libtool-bin libsqlite3-dev libpcre3-dev libspeexdsp-dev libldns-dev libedit-dev yasm liblua5.2-dev libopus-dev cmake xclip libcurl4-openssl-dev libexpat1-dev libgnutls28-dev libtiff5-dev libx11-dev unixodbc-dev libssl-dev python-dev zlib1g-dev libasound2-dev libogg-dev libvorbis-dev libperl-dev libgdbm-dev libdb-dev uuid-dev libsndfile1-dev # не хватает sqitch
 ```
 
 ### Git:
@@ -36,7 +36,7 @@ sudo apt-get install git
 ssh-keygen -t ed25519
 ```
 
-(на каждом этаме жмем enter)
+(на каждом этапе жмем enter)
 
 
 * копируем содержимое публичного ключа с помощью 
@@ -52,20 +52,22 @@ xclip -sel clip < ~/.ssh/id_ed25519.pub
 ```
 Host gitlab.sifox.ru
 Port 10622
-User <username@sifox.ru>
+User <username@sifox.ru> #здесь твоё имя пользователя
 PreferredAuthentications publickey
 IdentityFile ~/.ssh/id_ed25519
 ```
 
 * создаем ~/.gitconfig и заполняем:
 
->[user]  email = ((mailto:pavel.abramov@sifox.com pavel.abramov@sifox.com))  name = ((mailto:pavel.abramov@sifox.com pavel.abramov@sifox.com))
->
->[url "ssh://git@gitlab.sifox.ru:10622/"]  insteadOf = "((https://gitlab.sifox.ru/%22 https://gitlab.sifox.ru/"))
+```
+[user]  email = pavel.abramov@sifox.com name = pavel.abramov@sifox.com
+[url "ssh://git@gitlab.sifox.ru:10622/"]  insteadOf = "https://gitlab.sifox.ru/"))
+```
+
 ### БД:
 #### PostgreSQL:
 
-* устанавливаем (((https://www.postgresql.org/download/linux/ubuntu/): https://www.postgresql.org/download/linux/ubuntu/):))
+* устанавливаем https://www.postgresql.org/download/linux/ubuntu/:
 
 ```bash
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
@@ -84,6 +86,15 @@ EOF
 createdb
 ```
 
+* Создаём пользователя vms и vms databse:
+
+```
+sudo -u postgres psql << EOF
+CREATE ROLE vms WITH LOGIN PASSWORD 'vms_2018' CREATEDB CREATEROLE SUPERUSER;
+CREATE ROLE provision WITH LOGIN PASSWORD 'provision';
+CREATE DATABASE vms WITH OWNER vms;
+EOF
+```
 
 * создаем правило /home/develop/.pgpass и заполняем: #вместо develop твой username
 ```
@@ -106,42 +117,20 @@ psql
      ALTER SYSTEM SET wal_level = logical;
   \q
 sudo pg_ctlcluster 13 main restart #рестарт psql
-psql #не хватало здесь комманды
-sqitch deploy db:pg://localhost:5432/vms_test_db (Если появится сообщение с фразой "no password supplied", нужно привести строку запуска к виду
-sqitch deploy db:pg://username:123@localhost:5432/vms_test_db, где username - имя пользователя)
-sqitch verify db:pg://localhost:5432/vms_test_db
-
-#psql #а здесь лишняя
-  \c vms_test_db
-  \dt vms.* (посмотреть создались ли таблицы)
-
-psql -h 127.0.0.1 -p 5432 template1 < ./test/config_logical_replication.sql
-psql -h 127.0.0.1 -p 5432 template1 < ./test/test_data.sql
 ```
-
-#### db-vms:
-```bash
-git clone https://gitlab.sifox.ru/sf-vms/db-vms
-```
-
-
-* в readme есть некоторая информация после установки postgresql
-* Создать пользователя vms и vms databse:
-
-```bash
-sudo -u postgres psql << EOF
-CREATE ROLE vms WITH LOGIN PASSWORD 'vms_2018' CREATEDB CREATEROLE SUPERUSER;
-CREATE ROLE provision WITH LOGIN PASSWORD 'provision';
-CREATE DATABASE vms WITH OWNER vms;
-EOF
-```
-
 #### sqitch:
 
-* установка (((http://sqitch.org/download/debian/): http://sqitch.org/download/debian/):))
+* установка http://sqitch.org/download/debian/
 
 ```bash
 sudo apt-get install libdbd-pg-perl postgresql-client-13 postgresql-server-dev-13 sqitch
+```
+
+* Для внесения изменений в базу используется sqitch. Для первоначальной работы sqitch, необходимо настроить (выполняется один раз):
+
+```
+$ sqitch config --user user.name "Vasily Ivanov"
+$ sqitch config --user user.email 'vasily.ivanov@sifox.com'
 ```
 
 #### tmp_extensions:
@@ -173,7 +162,35 @@ rm -fr tmp_extensions
 cd db-vms
 ```
 
-### Erlang (21.3.3):
+#### db-vms:
+```bash
+git clone https://gitlab.sifox.ru/sf-vms/db-vms
+```
+
+* в readme есть некоторая информация после установки postgresql
+
+* Создаем схему БД с помощью sqitch
+```
+cd ~/db-vms
+sqitch deploy db:pg://localhost:5432/vms_test_db
+```
+* Если появится сообщение с фразой "no password supplied", нужно привести строку запуска к виду:
+```
+sqitch deploy db:pg://username:123@localhost:5432/vms_test_db, где username - имя пользователя DB)
+sqitch verify db:pg://localhost:5432/vms_test_db
+
+psql
+  \c vms_test_db
+  \dt vms.* (посмотреть создались ли таблицы)
+
+psql -h 127.0.0.1 -p 5432 template1 < ./test/config_logical_replication.sql
+psql -h 127.0.0.1 -p 5432 template1 < ./test/test_data.sql
+```
+
+
+
+
+### Erlang (23.3):
 #### kerl:
 ```bash
 mkdir -p ~/bin
@@ -181,18 +198,18 @@ cd ~/bin
 curl -O https://raw.githubusercontent.com/kerl/kerl/master/kerl
 chmod a+x ./kerl
 ./kerl update releases
-./kerl build 21.3.3 21.3.3
-./kerl install 21.3.3 ~/kerl/21.3.3
-. ~/kerl/21.3.3/activate
+./kerl build 23.3 23.3
+./kerl install 23.3 ~/kerl/23.3
+. ~/kerl/23.3/activate
 ```
 
-<#<table class="wikisnippet_alert" style="border-left:4px solid #aaa; margin:20px; width:90%; background-color:#f1f1f1;">
-<tr valign="middle" style="vertical-align: middle;"><td style="vertical-align: middle; padding:20px; 20px 0 0px; text-align:left;">#>
-Запускаем всегда когда хотим работать с нодой. Инстанс привязан к терминалу!
+* Запускаем всегда ". ~/kerl/23.3/activate", когда хотим работать с нодой. Инстанс привязан к терминалу!
 
+* Чтобы выключить:
+```
+kerl_deactivate
+```
 
-<#</td></tr></table>#>
-kerl_deactivate - что бы выключить
 
 #### rebar (3.9.1):
 ```
@@ -387,21 +404,21 @@ sudo tar -xvzf mf_sounds_20191205.tar.gz
 
 ### Запуск:
 
+* freeswitch (лучше в отдельной сессии терминала):
+
+```bash
+. ~/kerl/23.3/activate
+freeswitch
+```
+
 * vms_fs:
 
 ```bash
 cd
-. ~/kerl/21.3.3/activate
+. ~/kerl/23.3/activate
 ./_build/default/rel/vms_fs/bin/vms_fs console
 ```
 
-
-* freeswitch:
-
-```bash
-. ~/kerl/21.3.3/activate
-freeswitch
-```
 
 Успешный вывод на ноде:
 
@@ -417,7 +434,13 @@ mod_sofia loaded, ready for traffic, res:<<"+OK Reloading XML\n+OK\n">>
 Ставим софтфон:
 
 
-* например zoiper (((https://www.zoiper.com/en/documentation/linux-installation-and-configuration)) https://www.zoiper.com/en/documentation/linux-installation-and-configuration))))
+* например zoiper https://www.zoiper.com/en/documentation/linux-installation-and-configuration
 
->login: testpwd: 1234domain: -ip-:5060settings -&gt; accounts -&gt; test -&gt; advanced -&gt; register on startup = falseзвонок на 2222 : запись сообщениязвонок на 222 : прослушать записанное сообщение
-где -ip- - твой ip
+>login: test
+>pwd: 1234
+>domain: -ip-:5060 #где -ip- - ip ноды с vms-fs
+>settings -&gt; accounts -&gt; test -&gt; advanced -&gt; register on startup = false
+>Звонок на 2222 : запись сообщения
+>Звонок на 222 : прослушать записанное сообщение
+>
+
